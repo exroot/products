@@ -7,6 +7,7 @@ import {
     JoinColumn,
 } from "typeorm";
 import { Length, IsBoolean } from "class-validator";
+import { Battery, User } from ".";
 
 @Entity("groups")
 export class Group {
@@ -21,11 +22,11 @@ export class Group {
     @IsBoolean()
     deleted!: boolean;
 
-    // @Column()
-    // @ManyToOne((type: User) => User, (user: User) => user.groups)
-    // @JoinColumn({ name: "user" })
-    // user!: number;
+    @Column()
+    @ManyToOne((type: User) => User, (user: User) => user.groups)
+    @JoinColumn({ name: "user" })
+    user!: number;
 
-    // @OneToMany((type: Battery) => Battery, (battery: Battery) => battery.group)
-    // batteries!: Battery[];
+    @OneToMany((type: Battery) => Battery, (battery: Battery) => battery.group)
+    batteries!: Battery[];
 }
