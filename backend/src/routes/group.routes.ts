@@ -10,11 +10,11 @@ import {
 
 const router: Router = Router();
 
-router.get("/api/v1/brands", getAllGroups);
-router.get("/api/v1/brands/:brand_id", getGroup);
-router.post("/api/v1/brands", postGroup);
-router.put("/api/v1/brands/:brand_id", editGroup);
-router.delete("/api/v1/brands/:brand_id", deleteGroup);
-router.get("/api/v1/brands/:brand_id/batteries", getProductsByGroup);
+router.get("/api/v1/groups", getAllGroups);
+router.get("/api/v1/groups/:group_id", getGroup);
+router.post("/api/v1/groups", postGroup);
+router.put("/api/v1/groups/:group_id", editGroup);
+router.delete("/api/v1/groups/:group_id", deleteGroup);
+router.get("/api/v1/groups/:group_id/batteries", getProductsByGroup);
 
 export default router;
