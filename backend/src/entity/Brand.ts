@@ -7,7 +7,7 @@ import {
     JoinColumn,
 } from "typeorm";
 import { Length, IsBoolean } from "class-validator";
-import { User } from ".";
+import { User, Battery } from ".";
 
 @Entity("brands")
 export class Brand {
@@ -19,14 +19,14 @@ export class Brand {
     brand!: string;
 
     @Column()
-    @IsBoolean()
-    deleted!: boolean;
-
-    @Column()
     @ManyToOne((type: User) => User, (user: User) => user.brands)
     @JoinColumn({ name: "user" })
     user!: number;
 
-    // @OneToMany((type: Battery) => Battery, (battery: Battery) => battery.brand)
-    // batteries!: Battery[];
+    @OneToMany((type: Battery) => Battery, (battery: Battery) => battery.brand)
+    batteries!: Battery[];
+
+    @Column()
+    @IsBoolean()
+    deleted!: boolean;
 }
