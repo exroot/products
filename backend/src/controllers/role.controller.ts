@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { Role, User } from "../entity";
 import {
+    IRole,
     findAllRoles,
     findRole,
     createRole,
@@ -8,7 +9,6 @@ import {
     removeRole,
     findUsersByRole,
 } from "../services/role.service";
-import { DeleteResult } from "typeorm";
 
 export const getAllRoles = async (
     req: Request,
@@ -41,27 +41,30 @@ export const postRole = async (
     next: NextFunction
 ): Promise<Response | void> => {
     const { role } = req.body;
-    const newRoleData = new Role();
+    const newRoleData: IRole = {
+        role,
+        deleted: false,
+    };
     try {
-        newRoleData.role = role;
-        newRoleData.deleted = false;
         const newRole = await createRole(newRoleData);
         return res.status(200).json(newRole);
     } catch (err) {
         next(err);
     }
 };
+
 export const editRole = async (
     req: Request,
     res: Response,
     next: NextFunction
 ): Promise<Response | void> => {
-    const { rol_id } = req.params;
+    const { role_id } = req.params;
     const { role } = req.body;
+    const updatedRole: IRole = {
+        role_id: Number(role_id),
+        role,
+    };
     try {
-        const rolToUpdate: Role = await findRole(rol_id);
-        const updatedRole = rolToUpdate;
-        updatedRole.role = role;
         const updatedResults: Role = await updateRole(updatedRole);
         return res.status(200).json(updatedResults);
     } catch (err) {
@@ -75,7 +78,7 @@ export const deleteRole = async (
 ): Promise<Response | void> => {
     const { role_id } = req.params;
     try {
-        const deleteResults: DeleteResult = await removeRole(role_id);
+        const deleteResults: Role = await removeRole(role_id);
         return res.status(200).json(deleteResults);
     } catch (err) {
         next(err);
