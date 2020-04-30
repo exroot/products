@@ -6,8 +6,8 @@ import {
     ManyToOne,
     OneToMany,
 } from "typeorm";
-import { Length } from "class-validator";
-import { Role, Brand } from ".";
+import { Length, IsBoolean } from "class-validator";
+import { Role, Brand, Battery, Group } from ".";
 
 @Entity("users")
 export class User {
@@ -27,12 +27,16 @@ export class User {
     @JoinColumn({ name: "role" })
     role!: Role;
 
-    // @OneToMany((type: Battery) => Battery, (battery: Battery) => battery.user)
-    // batteries!: Battery[];
+    @OneToMany((type: Battery) => Battery, (battery: Battery) => battery.user)
+    batteries!: Battery[];
 
-    // @OneToMany((type: Group) => Group, (group: Group) => group.user)
-    // groups!: Group[];
+    @OneToMany((type: Group) => Group, (group: Group) => group.user)
+    groups!: Group[];
 
     @OneToMany((type: Brand) => Brand, (brand: Brand) => brand.user)
     brands!: Brand[];
+
+    @Column()
+    @IsBoolean()
+    deleted!: boolean;
 }
