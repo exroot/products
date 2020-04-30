@@ -1,14 +1,14 @@
 import { Request, Response, NextFunction } from "express";
 import { User } from "../entity";
 import {
-    findAll,
-    findOne,
-    create,
-    update,
-    remove,
+    IUser,
+    updateUser,
+    removeUser,
+    createUser,
+    findUser,
+    findAllUsers,
 } from "../services/user.service";
 import { hash } from "bcryptjs";
-import { DeleteResult } from "typeorm";
 
 export const getAllUsers = async (
     req: Request,
@@ -16,7 +16,7 @@ export const getAllUsers = async (
     next: NextFunction
 ): Promise<Response | void> => {
     try {
-        const users: User[] = await findAll();
+        const users: User[] = await findAllUsers();
         return res.status(200).json(users);
     } catch (err) {
         next(err);
@@ -30,7 +30,7 @@ export const getUser = async (
 ): Promise<Response | void> => {
     const { user_id } = req.params;
     try {
-        const user: User = await findOne(user_id);
+        const user: User = await findUser(user_id);
         return res.status(200).json(user);
     } catch (err) {
         next(err);
@@ -43,30 +43,36 @@ export const postUser = async (
     next: NextFunction
 ): Promise<Response | void> => {
     const { username, password } = req.body;
-    const newUser = new User();
+    const newUser: IUser = {
+        username,
+        password,
+    };
     try {
         newUser.username = username;
         newUser.password = await hash(password, 12);
-        const newUserSave: User = await create(newUser);
+        const newUserSave: User = await createUser(newUser);
         return res.status(200).json(newUserSave);
     } catch (err) {
         next(err);
     }
 };
 
-export const updateUser = async (
+export const editUser = async (
     req: Request,
     res: Response,
     next: NextFunction
 ): Promise<Response | void> => {
     const { user_id } = req.params;
-    const { username, password } = req.body;
+    const { username, password, role } = req.body;
+    const updatedUser: IUser = {
+        user_id: Number(user_id),
+        username,
+        password: await hash(password, 12),
+        role,
+    };
+    console.log(updatedUser);
     try {
-        const userToUpdate: User = await findOne(user_id);
-        const updatedUser: User = userToUpdate;
-        updatedUser.username = username;
-        updatedUser.password = await hash(password, 12);
-        const updateResults: User = await update(updatedUser);
+        const updateResults: User = await updateUser(updatedUser);
         return res.status(200).json(updateResults);
     } catch (err) {
         next(err);
@@ -80,7 +86,7 @@ export const deleteUser = async (
 ): Promise<Response | void> => {
     const { user_id } = req.params;
     try {
-        const deleteResults: DeleteResult = await remove(user_id);
+        const deleteResults: User = await removeUser(user_id);
         return res.status(200).json(deleteResults);
     } catch (err) {
         next(err);
