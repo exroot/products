@@ -8,6 +8,8 @@ import {
     IBattery,
 } from "../services/battery.service";
 import { Battery } from "../entity";
+import { createBatterySchema } from "../validations";
+import { Boom } from "../utils/HTTP";
 
 export const getAllBatteries = async (
     req: Request,
@@ -42,7 +44,7 @@ export const postBattery = async (
     next: NextFunction
 ): Promise<Response | void> => {
     const { name, image, price, amperage, brand, group, user } = req.body;
-    const battery: IBattery = {
+    const batteryData: IBattery = {
         name,
         image,
         price,
@@ -54,7 +56,12 @@ export const postBattery = async (
         deleted: false,
     };
     try {
-        const newBattery = await createBattery(battery);
+        await createBatterySchema
+            .validate(batteryData, { abortEarly: false })
+            .catch((err) => {
+                throw Boom.badRequest(err.errors);
+            });
+        const newBattery = await createBattery(batteryData);
         return res.status(200).json(newBattery);
     } catch (err) {
         next(err);
@@ -72,13 +79,17 @@ export const editBattery = async (
         battery_id: Number(battery_id),
         name,
         image,
-        price,
-        amperage,
-        brand,
-        group,
-        user,
+        price: Number(price),
+        amperage: Number(amperage),
+        brand: Number(brand),
+        group: Number(group),
     };
     try {
+        await createBatterySchema
+            .validate(updatedBattery, { abortEarly: false })
+            .catch((err) => {
+                throw Boom.badRequest(err.errors);
+            });
         const updateResults: Battery = await updateBattery(updatedBattery);
         return res.status(200).json(updateResults);
     } catch (err) {
