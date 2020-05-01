@@ -5,7 +5,13 @@ import {
     JoinColumn,
     ManyToOne,
 } from "typeorm";
-import { IsNumber, Length, IsBoolean } from "class-validator";
+import {
+    IsNumber,
+    Length,
+    IsBoolean,
+    IsPositive,
+    IsOptional,
+} from "class-validator";
 import { Brand, User, Group } from ".";
 
 @Entity("batteries")
@@ -19,18 +25,22 @@ export class Battery {
 
     @Column()
     @Length(0, 255)
+    @IsOptional()
     image!: string;
 
     @Column()
     @IsNumber()
+    @IsPositive()
     price!: number;
 
     @Column()
     @IsNumber()
+    @IsPositive()
     stock!: number;
 
     @Column()
     @IsNumber()
+    @IsPositive()
     amperage!: number;
 
     @Column()
