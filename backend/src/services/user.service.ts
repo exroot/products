@@ -1,6 +1,7 @@
 import { getRepository, DeleteResult, Repository } from "typeorm";
 import { User, Role } from "../entity";
 import { HTTPClientResponse, Boom, HTTPServerError } from "../utils/HTTP";
+import { validate } from "class-validator";
 
 export interface IUser {
     user_id?: number;
@@ -43,16 +44,29 @@ export const findUser = async (userId: number | string): Promise<User> => {
 };
 
 export const createUser = async (user: IUser): Promise<User> => {
+    const { username, password } = user;
     try {
         const newUser: User = new User();
-        newUser.username = user.username;
-        newUser.password = user.password;
+        newUser.username = username;
+        newUser.password = password;
         newUser.deleted = false;
-        const role: Role = new Role();
-        role.role = "Administrador";
-        role.deleted = false;
-        const newRole: Role = await getRepository(Role).save(role);
-        newUser.role = newRole;
+        const role: Role | undefined = await getRepository(Role).findOne(2);
+        if (!role) {
+            throw Boom.badRequest(`You need to create a role first`);
+        }
+        newUser.role = role;
+        // validate new user data before save it on DB
+        const validationErrors: string[] = [];
+        await validate(newUser).then((errors) => {
+            console.log(errors);
+            if (errors.length > 0) {
+                errors.forEach((err) => {
+                    const error: string[] = Object.values(err.constraints);
+                    validationErrors.push(...error);
+                });
+                throw Boom.badRequest(validationErrors);
+            }
+        });
         return await getRepository(User).save(newUser);
     } catch (err) {
         if (err instanceof HTTPClientResponse) {
@@ -77,9 +91,24 @@ export const updateUser = async (updatedUser: IUser): Promise<User> => {
         if (!userRole) {
             throw Boom.badRequest(`That role doesn't exist`);
         }
-        userToUpdate.role = userRole;
+
+        // state (deleted or not) value of user remains the same
         userToUpdate.username = username;
         userToUpdate.password = password;
+        userToUpdate.role = userRole;
+
+        // validate user updated data before save it on DB
+        const validationErrors: string[] = [];
+        await validate(userToUpdate).then((errors) => {
+            console.log(errors);
+            if (errors.length > 0) {
+                errors.forEach((err) => {
+                    const error: string[] = Object.values(err.constraints);
+                    validationErrors.push(...error);
+                });
+                throw Boom.badRequest(validationErrors);
+            }
+        });
         return await getRepository(User).save(userToUpdate);
     } catch (err) {
         if (err instanceof HTTPClientResponse) {

@@ -9,6 +9,8 @@ import {
     findAllUsers,
 } from "../services/user.service";
 import { hash } from "bcryptjs";
+import { createUserSchema } from "../validations/user.schema";
+import { Boom } from "../utils/HTTP";
 
 export const getAllUsers = async (
     req: Request,
@@ -43,15 +45,21 @@ export const postUser = async (
     next: NextFunction
 ): Promise<Response | void> => {
     const { username, password } = req.body;
-    const newUser: IUser = {
+    const userData: IUser = {
         username,
         password,
     };
     try {
-        newUser.username = username;
-        newUser.password = await hash(password, 12);
-        const newUserSave: User = await createUser(newUser);
-        return res.status(200).json(newUserSave);
+        userData.username = username;
+        userData.password = password;
+        await createUserSchema
+            .validate(userData, { abortEarly: false })
+            .catch((err) => {
+                throw Boom.badRequest(err.errors);
+            });
+        userData.password = await hash(userData.password, 12);
+        const newUser: User = await createUser(userData);
+        return res.status(200).json(newUser);
     } catch (err) {
         next(err);
     }
@@ -67,11 +75,16 @@ export const editUser = async (
     const updatedUser: IUser = {
         user_id: Number(user_id),
         username,
-        password: await hash(password, 12),
+        password,
         role,
     };
-    console.log(updatedUser);
     try {
+        await createUserSchema
+            .validate(updatedUser, { abortEarly: false })
+            .catch((err) => {
+                throw Boom.badRequest(err.errors);
+            });
+        updatedUser.password = await hash(updatedUser.password, 12);
         const updateResults: User = await updateUser(updatedUser);
         return res.status(200).json(updateResults);
     } catch (err) {
