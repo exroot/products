@@ -1,6 +1,7 @@
 import { getRepository, DeleteResult } from "typeorm";
 import { Battery } from "../entity";
 import { HTTPServerError, Boom, HTTPClientResponse } from "../utils/HTTP";
+import { validate } from "class-validator";
 
 export interface IBattery {
     battery_id?: number;
@@ -10,7 +11,8 @@ export interface IBattery {
     amperage: number;
     stock?: number;
     brand: number;
-    user: number;
+    group: number;
+    user?: number;
     deleted?: boolean;
 }
 
@@ -49,8 +51,19 @@ export const findBattery = async (
 };
 
 export const createBattery = async (battery: IBattery): Promise<Battery> => {
+    const newBattery: Battery = getRepository(Battery).create(battery);
+    const validationErrors: string[] = [];
     try {
-        const newBattery = getRepository(Battery).create(battery);
+        // validate new battery data before save it on DB
+        await validate(newBattery).then((errors) => {
+            if (errors.length > 0) {
+                errors.forEach((err) => {
+                    const error: string[] = Object.values(err.constraints);
+                    validationErrors.push(...error);
+                });
+                throw Boom.badRequest(validationErrors);
+            }
+        });
         return await getRepository(Battery).save(newBattery);
     } catch (err) {
         if (err instanceof HTTPClientResponse) {
@@ -71,7 +84,28 @@ export const updateBattery = async (
         if (!batteryToUpdate) {
             throw Boom.notFound(`Battery to update not found`);
         }
-        return await getRepository(Battery).save(updatedBattery);
+        const batteryUpdated: Battery = getRepository(Battery).create(
+            updatedBattery
+        );
+
+        // stock, user, and state (deleted or not) values of battery remains the same
+        const { stock, user, deleted } = batteryToUpdate;
+        batteryUpdated.stock = stock;
+        batteryUpdated.user = user;
+        batteryUpdated.deleted = deleted;
+
+        // validate battery updated registry before save it on DB
+        let validationErrors: string[] = [];
+        await validate(batteryUpdated).then((errors) => {
+            if (errors.length > 0) {
+                errors.forEach((err) => {
+                    const error: string[] = Object.values(err.constraints);
+                    validationErrors.push(...error);
+                });
+                throw Boom.badRequest(validationErrors);
+            }
+        });
+        return await getRepository(Battery).save(batteryUpdated);
     } catch (err) {
         if (err instanceof HTTPClientResponse) {
             throw err;
