@@ -9,6 +9,8 @@ import {
     findProductsByGroup,
 } from "../services/group.service";
 import { Group, Battery } from "../entity";
+import { createGroupSchema } from "../validations";
+import { Boom } from "../utils/HTTP";
 
 export const getAllGroups = async (
     req: Request,
@@ -43,13 +45,18 @@ export const postGroup = async (
     next: NextFunction
 ): Promise<Response | void> => {
     const { group, user } = req.body;
-    const groupData: IGroup = {
+    const newGroupData: IGroup = {
         group,
-        user,
+        user: Number(user),
         deleted: false,
     };
     try {
-        const newGroup: Group = await createGroup(groupData);
+        await createGroupSchema
+            .validate(newGroupData, { abortEarly: false })
+            .catch((err) => {
+                throw Boom.badRequest(err.errors);
+            });
+        const newGroup: Group = await createGroup(newGroupData);
         return res.status(200).json(newGroup);
     } catch (err) {
         next(err);
@@ -66,11 +73,16 @@ export const editGroup = async (
     const updatedGroup: IGroup = {
         group_id: Number(group_id),
         group,
-        user,
+        user: Number(user),
     };
     try {
-        const updatedResults: Group = await updateGroup(updatedGroup);
-        return res.status(200).json(updatedResults);
+        await createGroupSchema
+            .validate(updatedGroup, { abortEarly: false })
+            .catch((err) => {
+                throw Boom.badRequest(err.errors);
+            });
+        const updateResults: Group = await updateGroup(updatedGroup);
+        return res.status(200).json(updateResults);
     } catch (err) {
         next(err);
     }
