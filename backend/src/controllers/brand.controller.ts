@@ -9,6 +9,8 @@ import {
     removeBrand,
     findProductsByBrand,
 } from "../services/brand.service";
+import { createBrandSchema } from "../validations";
+import { Boom } from "../utils/HTTP";
 
 export const getAllBrands = async (
     req: Request,
@@ -45,10 +47,15 @@ export const postBrand = async (
     const { brand, user } = req.body;
     const newBrandData: IBrand = {
         brand,
-        user,
+        user: Number(user),
         deleted: false,
     };
     try {
+        await createBrandSchema
+            .validate(newBrandData, { abortEarly: false })
+            .catch((err) => {
+                throw Boom.badRequest(err.errors);
+            });
         const newBrand: Brand = await createBrand(newBrandData);
         return res.status(200).json(newBrand);
     } catch (err) {
@@ -66,11 +73,16 @@ export const editBrand = async (
     const updatedBrand: IBrand = {
         brand_id: Number(brand_id),
         brand,
-        user,
+        user: Number(user),
     };
     try {
-        const updatedResults: Brand = await updateBrand(updatedBrand);
-        return res.status(200).json(updatedResults);
+        await createBrandSchema
+            .validate(updatedBrand, { abortEarly: false })
+            .catch((err) => {
+                throw Boom.badRequest(err.errors);
+            });
+        const updateResults: Brand = await updateBrand(updatedBrand);
+        return res.status(200).json(updateResults);
     } catch (err) {
         next(err);
     }

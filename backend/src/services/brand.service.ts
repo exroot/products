@@ -1,6 +1,7 @@
 import { getRepository, DeleteResult } from "typeorm";
 import { Brand, Battery } from "../entity";
 import { HTTPServerError, Boom, HTTPClientResponse } from "../utils/HTTP";
+import { validate } from "class-validator";
 
 export interface IBrand {
     brand_id?: number;
@@ -42,8 +43,18 @@ export const findBrand = async (brand_id: number | string): Promise<Brand> => {
 };
 
 export const createBrand = async (brand: IBrand): Promise<Brand> => {
+    const newBrand: Brand = getRepository(Brand).create(brand);
+    const validationErrors: string[] = [];
     try {
-        const newBrand: Brand = getRepository(Brand).create(brand);
+        await validate(newBrand).then((errors) => {
+            if (errors.length > 0) {
+                errors.forEach((err) => {
+                    const error: string[] = Object.values(err.constraints);
+                    validationErrors.push(...error);
+                });
+                throw Boom.badRequest(validationErrors);
+            }
+        });
         return await getRepository(Brand).save(newBrand);
     } catch (err) {
         if (err instanceof HTTPClientResponse) {
@@ -62,6 +73,17 @@ export const updateBrand = async (updatedBrand: IBrand): Promise<Brand> => {
         if (!brandToUpdate) {
             throw Boom.notFound(`Brand to update not found`);
         }
+        brandToUpdate.brand = updatedBrand.brand;
+        const validationErrors: string[] = [];
+        await validate(brandToUpdate).then((errors) => {
+            if (errors.length > 0) {
+                errors.forEach((err) => {
+                    const error: string[] = Object.values(err.constraints);
+                    validationErrors.push(...error);
+                });
+                throw Boom.badRequest(validationErrors);
+            }
+        });
         return await getRepository(Brand).save(updatedBrand);
     } catch (err) {
         if (err instanceof HTTPClientResponse) {
@@ -71,7 +93,7 @@ export const updateBrand = async (updatedBrand: IBrand): Promise<Brand> => {
     }
 };
 
-export const deleteBrand = async (
+export const removeBrand = async (
     brand_id: number | string
 ): Promise<Brand> => {
     try {
