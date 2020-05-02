@@ -76,7 +76,7 @@ export const editUser = async (
         user_id: Number(user_id),
         username,
         password,
-        role,
+        role: Number(role),
     };
     try {
         await createUserSchema

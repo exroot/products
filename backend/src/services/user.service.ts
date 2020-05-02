@@ -100,7 +100,6 @@ export const updateUser = async (updatedUser: IUser): Promise<User> => {
         // validate user updated data before save it on DB
         const validationErrors: string[] = [];
         await validate(userToUpdate).then((errors) => {
-            console.log(errors);
             if (errors.length > 0) {
                 errors.forEach((err) => {
                     const error: string[] = Object.values(err.constraints);
