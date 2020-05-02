@@ -1,6 +1,7 @@
 import { Role, User } from "../entity";
 import { HTTPClientResponse, Boom, HTTPServerError } from "../utils/HTTP";
 import { getRepository, Repository, DeleteResult } from "typeorm";
+import { validate } from "class-validator";
 
 export interface IRole {
     role_id?: number;
@@ -41,10 +42,20 @@ export const findRole = async (roleId: number | string): Promise<Role> => {
 };
 
 export const createRole = async (role: IRole): Promise<Role> => {
-    const newRole = new Role();
+    const newRole: Role = new Role();
     newRole.role = role.role;
     newRole.deleted = false;
+    const validationErrors: string[] = [];
     try {
+        await validate(newRole).then((errors) => {
+            if (errors.length > 0) {
+                errors.forEach((err) => {
+                    const error: string[] = Object.values(err.constraints);
+                    validationErrors.push(...error);
+                });
+                throw Boom.badRequest(validationErrors);
+            }
+        });
         return await getRepository(Role).save(newRole);
     } catch (err) {
         if (err instanceof HTTPClientResponse) {
@@ -64,6 +75,16 @@ export const updateRole = async (updatedRole: IRole): Promise<Role> => {
             throw Boom.notFound(`Role to update not found`);
         }
         roleToUpdate.role = updatedRole.role;
+        const validationErrors: string[] = [];
+        await validate(roleToUpdate).then((errors) => {
+            if (errors.length > 0) {
+                errors.forEach((err) => {
+                    const error: string[] = Object.values(err.constraints);
+                    validationErrors.push(...error);
+                });
+                throw Boom.badRequest(validationErrors);
+            }
+        });
         return await getRepository(Role).save(roleToUpdate);
     } catch (err) {
         if (err instanceof HTTPClientResponse) {

@@ -9,6 +9,8 @@ import {
     removeRole,
     findUsersByRole,
 } from "../services/role.service";
+import { createRoleSchema } from "../validations";
+import { Boom } from "../utils/HTTP";
 
 export const getAllRoles = async (
     req: Request,
@@ -46,6 +48,11 @@ export const postRole = async (
         deleted: false,
     };
     try {
+        await createRoleSchema
+            .validate(newRoleData, { abortEarly: false })
+            .catch((err) => {
+                throw Boom.badRequest(err.errors);
+            });
         const newRole = await createRole(newRoleData);
         return res.status(200).json(newRole);
     } catch (err) {
@@ -65,8 +72,13 @@ export const editRole = async (
         role,
     };
     try {
-        const updatedResults: Role = await updateRole(updatedRole);
-        return res.status(200).json(updatedResults);
+        await createRoleSchema
+            .validate(updatedRole, { abortEarly: false })
+            .catch((err) => {
+                throw Boom.badRequest(err.errors);
+            });
+        const updateResults: Role = await updateRole(updatedRole);
+        return res.status(200).json(updateResults);
     } catch (err) {
         next(err);
     }
