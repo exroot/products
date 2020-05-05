@@ -1,5 +1,6 @@
 export interface IResponseArgs {
     message: string;
+    messagesArray?: string[];
     statusCode: number;
     error: string;
 }
@@ -22,6 +23,7 @@ export class HTTPServerError extends Error {
 export class HTTPClientResponse extends Error {
     readonly statusCode: number;
     readonly error: string;
+    readonly messagesArray: string[] | undefined;
     constructor(args?: IResponseArgs) {
         super();
         if (args) {
@@ -29,6 +31,7 @@ export class HTTPClientResponse extends Error {
             this.message = args.message;
             this.statusCode = args.statusCode;
             this.error = args.error;
+            this.messagesArray = args.messagesArray;
         } else {
             // if not, default initializers
             this.message = this.error = "Bad request";
@@ -44,16 +47,25 @@ export class Boom extends HTTPClientResponse {
         this.message = message;
         this.statusCode = statusCode;
     }
-    static badRequest(message?: string) {
-        const data: IResponseArg = {
+    static badRequest(message?: string | string[]) {
+        const responseData: IResponseArgs = {
             error: "Bad request",
-            message: message ? message : "Bad request",
+            message: "",
             statusCode: 400,
         };
-        throw new HTTPClientResponse(data);
+        if (!message) {
+            responseData.message = responseData.error;
+        } else {
+            if (Array.isArray(message)) {
+                responseData.messagesArray = message;
+            } else {
+                responseData.message = message;
+            }
+        }
+        throw new HTTPClientResponse(responseData);
     }
     static unauthorized(message?: string) {
-        const data: IResponseArg = {
+        const data: IResponseArgs = {
             error: "Unauthorized",
             message: message ? message : "Unauthorized",
             statusCode: 401,
@@ -61,7 +73,7 @@ export class Boom extends HTTPClientResponse {
         throw new HTTPClientResponse(data);
     }
     static forbidden(message?: string) {
-        const data: IResponseArg = {
+        const data: IResponseArgs = {
             error: "Forbidden",
             message: message ? message : "Forbidden",
             statusCode: 403,
@@ -69,7 +81,7 @@ export class Boom extends HTTPClientResponse {
         throw new HTTPClientResponse(data);
     }
     static notFound(message?: string) {
-        const data: IResponseArg = {
+        const data: IResponseArgs = {
             error: "Not found",
             message: message ? message : "Not found",
             statusCode: 404,
