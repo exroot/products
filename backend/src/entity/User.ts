@@ -15,7 +15,7 @@ export class User {
     user_id!: number;
 
     @Column()
-    @Length(4, 255)
+    @Length(4, 50)
     username!: string;
 
     @Column()
