@@ -33,6 +33,6 @@ export const errorHandler = (
     }
     return res.status(statusCode).json({
         status: statusCode,
-        message,
+        message: message ? message : err.messagesArray,
     });
 };
