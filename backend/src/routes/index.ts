@@ -1,4 +1,13 @@
-import shopRoutes from "./shop.routes";
-import adminRoutes from "./admin.routes";
+import batteryRoutes from "./battery.routes";
+import userRoutes from "./user.routes";
+import roleRoutes from "./role.routes";
+import brandRoutes from "./brand.routes";
+import groupRoutes from "./group.routes";
 
-export { shopRoutes, adminRoutes };
+export default [
+    batteryRoutes,
+    userRoutes,
+    roleRoutes,
+    brandRoutes,
+    groupRoutes,
+];
