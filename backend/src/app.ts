@@ -1,10 +1,10 @@
-import express, { Application, NextFunction, Request, Response } from "express";
+import express, { Application } from "express";
 import rateLimit, { RateLimit } from "express-rate-limit";
 import commonMiddlewares from "./middlewares/commons";
 import routes from "./routes";
 import { applyRoutes } from "./utils/applyRoutes";
 import { errorLogger, errorHandler } from "./middlewares/errorHandlers";
-import { createConnection, Connection } from "typeorm";
+import { createConnection } from "typeorm";
 import { dbConfig } from "./config/database";
 import dotenv from "dotenv";
 
