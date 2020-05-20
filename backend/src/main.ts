@@ -1,8 +1,11 @@
 import { App } from "./app";
+import { AuthServer } from "./authServer";
 
 async function main() {
     const app = new App();
-    await app.listen();
+    const authServer = new AuthServer();
+    app.listen();
+    authServer.listen();
 }
 
 main();
