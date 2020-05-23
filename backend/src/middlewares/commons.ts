@@ -2,6 +2,7 @@ import morgan from "morgan";
 import cors from "cors";
 import compression from "compression";
 import { urlencoded, json, Response, Request, NextFunction } from "express";
+import cookieParser from "cookie-parser";
 
 const headers = (req: Request, res: Response, next: NextFunction) => {
     res.header("Access-Control-Allow-Origin", "http://127.0.0.1:3000");
@@ -9,7 +10,7 @@ const headers = (req: Request, res: Response, next: NextFunction) => {
         "Access-Control-Allow-Headers",
         "Origin, X-Requested-With, Content-Type, Accept"
     );
-    res.header("Access-Control-Allow-Credentials", true);
+    res.header("Access-Control-Allow-Credentials", "true");
     next();
 };
 
@@ -19,5 +20,6 @@ export default [
     urlencoded({ extended: false }),
     json(),
     compression(),
+    cookieParser(),
     headers,
 ];

@@ -7,6 +7,7 @@ import { errorLogger, errorHandler } from "./middlewares/errorHandlers";
 import { createConnection } from "typeorm";
 import { dbConfig } from "./config/database";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
 
 export class App {
     protected express: Application;

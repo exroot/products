@@ -4,7 +4,6 @@ import commonMiddlewares from "./middlewares/commons";
 import { errorLogger, errorHandler } from "./middlewares/errorHandlers";
 import authRoutes from "./routes/auth.routes";
 import dotenv from "dotenv";
-import cookieParser from "cookie-parser";
 
 export class AuthServer {
     protected express: Application;
@@ -36,7 +35,6 @@ export class AuthServer {
     private setMiddlewares(): void {
         console.log("Loading middlewares...");
         this.express.use(commonMiddlewares);
-        this.express.use(cookieParser());
     }
     private catchErrors(): void {
         this.express.use(errorLogger);
