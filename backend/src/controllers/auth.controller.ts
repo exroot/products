@@ -57,18 +57,16 @@ export const logoutUser = async (
     try {
         const refreshToken = req.cookies.Authorization;
         const response = await logout(refreshToken);
-        return (
-            res
-                // .cookie("Authorization", "", {
-                //     httpOnly: false,
-                //     sameSite: true,
-                //     maxAge: 3600000,
-                // })
-                .status(200)
-                .json({
-                    response,
-                })
-        );
+        return res
+            .cookie("Authorization", "", {
+                httpOnly: false,
+                sameSite: true,
+                maxAge: 3600000,
+            })
+            .status(200)
+            .json({
+                response,
+            });
     } catch (err) {
         next(err);
     }
