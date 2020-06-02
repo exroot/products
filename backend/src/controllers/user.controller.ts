@@ -50,8 +50,6 @@ export const postUser = async (
         password,
     };
     try {
-        userData.username = username;
-        userData.password = password;
         await createUserSchema
             .validate(userData, { abortEarly: false })
             .catch((err) => {
