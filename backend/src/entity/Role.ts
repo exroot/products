@@ -15,6 +15,6 @@ export class Role {
     @IsBoolean()
     deleted!: boolean;
 
-    @OneToMany((type: User) => User, (user: User) => user.role)
+    @OneToMany((type) => User, (user) => user.role)
     users!: User[];
 }

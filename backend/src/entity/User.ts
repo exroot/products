@@ -7,7 +7,7 @@ import {
     OneToMany,
 } from "typeorm";
 import { Length, IsBoolean } from "class-validator";
-import { Role, Brand, Battery, Group } from ".";
+import { Role, Category, Product } from ".";
 
 @Entity("users")
 export class User {
@@ -22,19 +22,15 @@ export class User {
     @Length(8, 255)
     password!: string;
 
-    @Column()
-    @ManyToOne((type: Role) => Role, (role: Role) => role.users)
-    @JoinColumn({ name: "role" })
+    @ManyToOne((type) => Role, (role) => role.users)
+    @JoinColumn({ name: "role_id" })
     role!: Role;
 
-    @OneToMany((type: Battery) => Battery, (battery: Battery) => battery.user)
-    batteries!: Battery[];
+    @OneToMany((type) => Product, (product) => product.user)
+    products!: Product[];
 
-    @OneToMany((type: Group) => Group, (group: Group) => group.user)
-    groups!: Group[];
-
-    @OneToMany((type: Brand) => Brand, (brand: Brand) => brand.user)
-    brands!: Brand[];
+    @OneToMany((type) => Category, (category) => category.user)
+    categories!: Category[];
 
     @Column()
     @IsBoolean()
